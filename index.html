@@ -8,7 +8,17 @@
   <body>
     <div class="container">
       <button id="enableMotion">Enable Motion Sensors</button>
-      <div id="output"></div>
+      <table id="sensorTable">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>X (m/s²)</th>
+            <th>Y (m/s²)</th>
+            <th>Z (m/s²)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
     <script src="sensorScript.js"></script>

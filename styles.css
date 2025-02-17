@@ -28,6 +28,29 @@ body {
   button:hover {
     background-color: #0056b3;
   }
+
+  table {
+    margin-top: 20px;
+    border-collapse: collapse;
+    width: 90%;
+    max-width: 400px;
+    background: white;
+  }
+  
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  th {
+    background: #007bff;
+    color: white;
+  }
+  
+  tbody tr:nth-child(even) {
+    background: #f2f2f2;
+  }
   
   #output {
     margin-top: 20px;
