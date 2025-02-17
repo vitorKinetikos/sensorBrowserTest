@@ -1,8 +1,35 @@
 
 const enableButton = document.getElementById("enableMotion");
+const stopButton = document.getElementById("stopMotion");
+const saveCSVButton = document.getElementById("saveCSV");
+const saveCSVBottomButton = document.getElementById("saveCSVBottom");
 const tableBody = document.querySelector("#sensorTable tbody");
 
-let sensorInterval = null; // To manage streaming at 10Hz
+let sensorInterval = null;
+let recordedData = [];
+let lastAcceleration = null;
+
+// Chart setup
+const ctx = document.getElementById("sensorChart").getContext("2d");
+const chartData = {
+  labels: [], // Time points
+  datasets: [
+    { label: "X (m/s²)", borderColor: "red", data: [], fill: false },
+    { label: "Y (m/s²)", borderColor: "green", data: [], fill: false },
+    { label: "Z (m/s²)", borderColor: "blue", data: [], fill: false },
+  ],
+};
+const sensorChart = new Chart(ctx, {
+  type: "line",
+  data: chartData,
+  options: {
+    responsive: true,
+    scales: {
+      x: { title: { display: true, text: "Timestamp" } },
+      y: { title: { display: true, text: "Acceleration (m/s²)" } },
+    },
+  },
+});
 
 // Request permission and start motion sensor
 enableButton.addEventListener("click", function () {
@@ -30,31 +57,48 @@ enableButton.addEventListener("click", function () {
 
 // Start streaming accelerometer data at 10Hz
 function startStreaming() {
-  if (sensorInterval) clearInterval(sensorInterval); // Reset previous interval
+  if (sensorInterval) clearInterval(sensorInterval);
+
+  recordedData = [];
 
   window.addEventListener("devicemotion", handleMotionData);
 
-  // Stream at 10Hz (every 100ms)
   sensorInterval = setInterval(() => {
     if (lastAcceleration) {
       updateTable(lastAcceleration);
+      updateChart(lastAcceleration);
+      recordedData.push(lastAcceleration);
     }
   }, 100);
+
+  stopButton.disabled = false;
+  saveCSVButton.disabled = true;
+  saveCSVBottomButton.disabled = true;
+  enableButton.disabled = true;
 }
 
-let lastAcceleration = null;
+function stopStreaming() {
+  clearInterval(sensorInterval);
+  window.removeEventListener("devicemotion", handleMotionData);
 
-// Handle motion data
+  stopButton.disabled = true;
+  saveCSVButton.disabled = false;
+  saveCSVBottomButton.disabled = false;
+  enableButton.disabled = false;
+}
+
+stopButton.addEventListener("click", stopStreaming);
+
 function handleMotionData(event) {
   lastAcceleration = {
+    timestamp: new Date().toLocaleTimeString(),
     x: event.acceleration.x ? event.acceleration.x.toFixed(3) : "N/A",
     y: event.acceleration.y ? event.acceleration.y.toFixed(3) : "N/A",
     z: event.acceleration.z ? event.acceleration.z.toFixed(3) : "N/A",
-    timestamp: new Date().toLocaleTimeString(),
   };
 }
 
-// Update table dynamically
+// Update table
 function updateTable(accelData) {
   const newRow = document.createElement("tr");
 
@@ -65,86 +109,165 @@ function updateTable(accelData) {
     <td>${accelData.z}</td>
   `;
 
-  // Insert at the top of the table
   tableBody.insertBefore(newRow, tableBody.firstChild);
 
-  // Limit to 10 rows (to avoid performance issues)
   if (tableBody.rows.length > 10) {
     tableBody.removeChild(tableBody.lastChild);
   }
 }
 
+// Update chart
+function updateChart(accelData) {
+  if (chartData.labels.length >= 50) {
+    chartData.labels.shift();
+    chartData.datasets.forEach((dataset) => dataset.data.shift());
+  }
 
-// const outputDiv = document.getElementById('output');
-// const enableButton = document.getElementById('enableMotion');
+  chartData.labels.push(accelData.timestamp);
+  chartData.datasets[0].data.push(accelData.x);
+  chartData.datasets[1].data.push(accelData.y);
+  chartData.datasets[2].data.push(accelData.z);
 
-// let sensorInterval = null; // To manage streaming at 10Hz
+  sensorChart.update();
+}
 
-// // Helper function to print messages on the page
-// function logToPage(message) {
-//   const p = document.createElement('p');
-//   p.textContent = message;
-//   outputDiv.appendChild(p);
-// }
+// Save CSV
+function saveCSV() {
+  let csvContent = "data:text/csv;charset=utf-8,Timestamp,X (m/s²),Y (m/s²),Z (m/s²)\n";
 
-// // Clear output before logging new data (optional)
-// function clearOutput() {
-//   outputDiv.innerHTML = '';
-// }
+  recordedData.forEach((row) => {
+    csvContent += `${row.timestamp},${row.x},${row.y},${row.z}\n`;
+  });
 
-// // Initialize motion sensor event listener
-// function startMotionSensor() {
-//   let sensorTriggered = false;
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "sensor_data.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
-//   // Fallback: If no sensor data is received within 5 seconds, show a message.
-//   const sensorTimeout = setTimeout(() => {
-//     if (!sensorTriggered) {
-//       logToPage("No sensor data detected. It might be that your device does not support inertial sensors, or sensor data isn't available.");
-//     }
-//   }, 5000);
+saveCSVButton.addEventListener("click", saveCSV);
+saveCSVBottomButton.addEventListener("click", saveCSV);
 
-//   window.addEventListener('devicemotion', event => {
-//     sensorTriggered = true;
-//     clearTimeout(sensorTimeout);
 
-//     // Get acceleration values
-//     const acceleration = event.acceleration;
-//     const accelerationG = event.accelerationIncludingGravity;
-//     const rotationRate = event.rotationRate;
 
-//     // Display the sensor data on the page
-//     logToPage('Acceleration: ' + JSON.stringify(acceleration));
-//     logToPage('Acceleration including gravity: ' + JSON.stringify(accelerationG));
-//     logToPage('Rotation rate: ' + JSON.stringify(rotationRate));
-//   });
-// }
+// const enableButton = document.getElementById("enableMotion");
+// const stopButton = document.getElementById("stopMotion");
+// const saveCSVButton = document.getElementById("saveCSV");
+// const tableBody = document.querySelector("#sensorTable tbody");
 
-// // Handle button click event
-// enableButton.addEventListener('click', function () {
-//   clearOutput();
+// let sensorInterval = null;
+// let recordedData = []; // Array to store recorded sensor data
 
-//   // Check if inertial sensors are supported
-//   if (!('DeviceMotionEvent' in window)) {
-//     logToPage("No inertial sensors detected on this device. Please try this page on a compatible mobile device.");
+// // Request permission and start motion sensor
+// enableButton.addEventListener("click", function () {
+//   if (!("DeviceMotionEvent" in window)) {
+//     alert("No inertial sensors detected. Please try on a mobile device.");
 //     return;
 //   }
 
-//   // Check for permission requirement (iOS 13+)
-//   if (typeof DeviceMotionEvent.requestPermission === 'function') {
+//   if (typeof DeviceMotionEvent.requestPermission === "function") {
 //     DeviceMotionEvent.requestPermission()
-//       .then(permissionState => {
-//         if (permissionState === 'granted') {
-//           logToPage('Motion sensor permission granted.');
-//           startMotionSensor();
+//       .then((permissionState) => {
+//         if (permissionState === "granted") {
+//           startStreaming();
 //         } else {
-//           logToPage('Permission not granted for motion sensors.');
+//           alert("Permission denied for motion sensors.");
 //         }
 //       })
-//       .catch(error => {
-//         logToPage('Error requesting motion sensor permission: ' + error);
+//       .catch((error) => {
+//         alert("Error requesting motion sensor permission: " + error);
 //       });
 //   } else {
-//     // For browsers that don't require permission
-//     startMotionSensor();
+//     startStreaming();
 //   }
+// });
+
+// // Start streaming accelerometer data at 10Hz
+// function startStreaming() {
+//   if (sensorInterval) clearInterval(sensorInterval);
+
+//   recordedData = []; // Clear previous recordings
+
+//   window.addEventListener("devicemotion", handleMotionData);
+
+//   // Stream at 10Hz (every 100ms)
+//   sensorInterval = setInterval(() => {
+//     if (lastAcceleration) {
+//       updateTable(lastAcceleration);
+//       recordedData.push(lastAcceleration); // Save the recorded data
+//     }
+//   }, 100);
+
+//   // Enable stop and save buttons
+//   stopButton.disabled = false;
+//   saveCSVButton.disabled = true;
+//   enableButton.disabled = true;
+// }
+
+// function stopStreaming() {
+//   clearInterval(sensorInterval);
+//   window.removeEventListener("devicemotion", handleMotionData);
+
+//   // Enable save button, disable stop
+//   stopButton.disabled = true;
+//   saveCSVButton.disabled = false;
+//   enableButton.disabled = false;
+// }
+
+// stopButton.addEventListener("click", stopStreaming);
+
+// let lastAcceleration = null; // Only declare it once
+
+// // Handle motion data
+// function handleMotionData(event) {
+//   lastAcceleration = {
+//     timestamp: new Date().toISOString(),
+//     x: event.acceleration.x ? event.acceleration.x.toFixed(3) : "N/A",
+//     y: event.acceleration.y ? event.acceleration.y.toFixed(3) : "N/A",
+//     z: event.acceleration.z ? event.acceleration.z.toFixed(3) : "N/A",
+//   };
+// }
+
+// // Update table dynamically
+// function updateTable(accelData) {
+//   const newRow = document.createElement("tr");
+
+//   newRow.innerHTML = `
+//     <td>${accelData.timestamp}</td>
+//     <td>${accelData.x}</td>
+//     <td>${accelData.y}</td>
+//     <td>${accelData.z}</td>
+//   `;
+
+//   tableBody.insertBefore(newRow, tableBody.firstChild);
+
+//   if (tableBody.rows.length > 10) {
+//     tableBody.removeChild(tableBody.lastChild);
+//   }
+// }
+
+// // Save recorded data as CSV
+// saveCSVButton.addEventListener("click", function () {
+//   if (recordedData.length === 0) {
+//     alert("No data recorded.");
+//     return;
+//   }
+
+//   let csvContent = "data:text/csv;charset=utf-8,";
+//   csvContent += "Timestamp,X (m/s²),Y (m/s²),Z (m/s²)\n"; // Header row
+
+//   recordedData.forEach((row) => {
+//     csvContent += `${row.timestamp},${row.x},${row.y},${row.z}\n`;
+//   });
+
+//   const encodedUri = encodeURI(csvContent);
+//   const link = document.createElement("a");
+//   link.setAttribute("href", encodedUri);
+//   link.setAttribute("download", "sensor_data.csv");
+//   document.body.appendChild(link);
+//   link.click();
+//   document.body.removeChild(link);
 // });

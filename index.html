@@ -4,10 +4,50 @@
     <meta charset="UTF-8">
     <title>Inertial Sensor Output</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Load Chart.js -->
   </head>
   <body>
     <div class="container">
-      <button id="enableMotion">Enable Motion Sensors</button>
+      <div class="button-group">
+        <button id="enableMotion">Start Sensor</button>
+        <button id="stopMotion" disabled>Stop Sensor</button>
+      </div>
+
+      <table id="sensorTable">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>X (m/s²)</th>
+            <th>Y (m/s²)</th>
+            <th>Z (m/s²)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <canvas id="sensorChart"></canvas> <!-- Graph -->
+
+      <button id="saveCSV" disabled>Save CSV</button>
+    </div>
+
+    <script src="sensorScript.js"></script>
+  </body>
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Inertial Sensor Output</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="container">
+      <button id="enableMotion">Start Sensor</button>
+      <button id="stopMotion" disabled>Stop Sensor</button>
+      <button id="saveCSV" disabled>Save CSV</button>
+
       <table id="sensorTable">
         <thead>
           <tr>
@@ -23,4 +63,4 @@
 
     <script src="sensorScript.js"></script>
   </body>
-</html>
+</html> -->
