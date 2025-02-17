@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Inertial Sensor Output</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="container">
+      <button id="enableMotion">Start Sensor</button>
+      <button id="stopMotion" disabled>Stop Sensor</button>
+      <button id="saveCSV" disabled>Save CSV</button>
+
+      <table id="sensorTable">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>X (m/s²)</th>
+            <th>Y (m/s²)</th>
+            <th>Z (m/s²)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <script src="sensorScriptTest.js"></script>
+  </body>
+</html>
