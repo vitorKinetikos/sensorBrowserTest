@@ -2,7 +2,7 @@
 const enableButton = document.getElementById("enableMotion");
 const stopButton = document.getElementById("stopMotion");
 const saveCSVButton = document.getElementById("saveCSV");
-const saveCSVBottomButton = document.getElementById("saveCSVBottom");
+// const saveCSVBottomButton = document.getElementById("saveCSVBottom");
 const tableBody = document.querySelector("#sensorTable tbody");
 
 let sensorInterval = null;
@@ -73,7 +73,7 @@ function startStreaming() {
 
   stopButton.disabled = false;
   saveCSVButton.disabled = true;
-  saveCSVBottomButton.disabled = true;
+  // saveCSVBottomButton.disabled = true;
   enableButton.disabled = true;
 }
 
@@ -83,7 +83,7 @@ function stopStreaming() {
 
   stopButton.disabled = true;
   saveCSVButton.disabled = false;
-  saveCSVBottomButton.disabled = false;
+  // saveCSVBottomButton.disabled = false;
   enableButton.disabled = false;
 }
 
@@ -149,7 +149,7 @@ function saveCSV() {
 }
 
 saveCSVButton.addEventListener("click", saveCSV);
-saveCSVBottomButton.addEventListener("click", saveCSV);
+// saveCSVBottomButton.addEventListener("click", saveCSV);
 
 
 
