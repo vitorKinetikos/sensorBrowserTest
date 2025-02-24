@@ -30,7 +30,14 @@
       <button id="saveCSV" disabled>Save CSV</button>
     </div>
 
+    <!-- Hidden video element for wake lock -->
+    <video id="wakeLockVideo" playsinline muted loop style="display:none;">
+      <source src="silent.mp4" type="video/mp4">
+    </video>
+
+    <!-- Ensure script runs after the DOM is loaded -->
     <script src="sensorScript.js"></script>
+
   </body>
 </html>
 
